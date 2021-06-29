@@ -40,6 +40,7 @@ export default {
     elements: ['st', 'nd', 'rd', 'th'],
 
     showMoveableGuides: false,
+    lastTarget: null,
 
     moveable: {
       draggable: true,
@@ -61,10 +62,11 @@ export default {
       this.resetMoveableTarget()
 
       const wrapper = document.querySelector('.wrapper')
-      const isRunning = /running/.test(wrapper.style.animationPlayState)
-      wrapper.style.animationPlayState = isRunning ? 'paused' : 'running'
-      
-      this.animationState = /Run/.test(this.animationState) ? 'Pause' : 'Run'
+      const playState = window.getComputedStyle(wrapper).animationPlayState
+      const isRunning = /running/.test(playState)
+
+      wrapper.style.animationPlayState = isRunning ? 'paused' : 'running'      
+      this.animationState = isRunning ? 'Run' : 'Pause'
     },
 
     elementClicked ({ target }) {
@@ -75,6 +77,7 @@ export default {
 
     resetMoveableTarget () {
       this.showMoveableGuides = false
+      this.lastTarget = this.moveable.target
       this.moveable.target = null
     },
 
