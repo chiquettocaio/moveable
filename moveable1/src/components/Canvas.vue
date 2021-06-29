@@ -40,7 +40,6 @@ export default {
     elements: ['st', 'nd', 'rd', 'th'],
 
     showMoveableGuides: false,
-    lastTarget: null,
 
     moveable: {
       draggable: true,
@@ -70,14 +69,15 @@ export default {
     },
 
     elementClicked ({ target }) {
-      this.resetMoveableTarget()
-      this.moveable.target = target
-      this.showMoveableGuides = true
+      if (/run/i.test(this.animationState)) {
+        this.resetMoveableTarget()
+        this.moveable.target = target
+        this.showMoveableGuides = true
+      }
     },
 
     resetMoveableTarget () {
       this.showMoveableGuides = false
-      this.lastTarget = this.moveable.target
       this.moveable.target = null
     },
 
