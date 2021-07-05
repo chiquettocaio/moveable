@@ -1,6 +1,6 @@
   <template>
   <div class="bg">
-    <div      class="wrapper">
+    <div class="wrapper">
       <div
         v-for="(element, index) of elements"
         :data-index="index"
@@ -85,7 +85,6 @@ export default {
       const animations = this.animationInstances
       for (let i = 0; i < animations.length; i++) {
         animations[i].pause()
-        console.log('computedTiming', animations[i].getComputedTiming())
       }
     },
 
@@ -103,24 +102,43 @@ export default {
     },
 
     createAnimation () {
+      /* Animation contains "transform", so every "transform" that Moveable tries to apply will fail */
+      // const keyframes = [
+      //   [
+      //     { transform: 'scale(1)' },
+      //     { transform: 'scale(.3)' },
+      //   ], [
+      //     { transform: 'translateY(0) translateX(0)' },
+      //     { transform: 'translateY(-100px) translateX(0)' },
+      //     { transform: 'translateY(-100px) translateX(100px)' },
+      //     { transform: 'translateY(0) translateX(100px)' },
+      //     { transform: 'translateY(0) translateX(0)' },
+      //   ], [
+      //     { transform: 'translateY(0) translateX(0)' },
+      //     { transform: 'translateY(100px) translateX(-100px)' },
+      //     { transform: 'translateY(100px) translateX(0)' },
+      //     { transform: 'translateY(0) translateX(0)' }
+      //   ], [
+      //     { transform: 'rotateY(0)' },
+      //     { transform: 'rotateY(360deg)' }
+      //   ]
+      // ]
+
+      /* Animation contains "top, right, left, bottom", so every "top, right,
+      left, bottom" that Moveable tries to apply will fail */
       const keyframes = [
         [
-          { transform: 'scale(1)' },
-          { transform: 'scale(.3)' },
+          { top: '-100px' },
+          { top: '0px' },
         ], [
-          { transform: 'translateY(0) translateX(0)' },
-          { transform: 'translateY(-100px) translateX(0)' },
-          { transform: 'translateY(-100px) translateX(100px)' },
-          { transform: 'translateY(0) translateX(100px)' },
-          { transform: 'translateY(0) translateX(0)' },
+          { right: '-100px' },
+          { right: '0px' }
         ], [
-          { transform: 'translateY(0) translateX(0)' },
-          { transform: 'translateY(100px) translateX(-100px)' },
-          { transform: 'translateY(100px) translateX(0)' },
-          { transform: 'translateY(0) translateX(0)' }
+          { left: '-100px' },
+          { left: '0px' },
         ], [
-          { transform: 'rotateY(0)' },
-          { transform: 'rotateY(360deg)' }
+          { bottom: '-100px' },
+          { bottom: '0px' }
         ]
       ]
 
@@ -138,11 +156,10 @@ export default {
       }
     },
 
-    handleDrag({ target, transform }) {
-      const wrapper = document.querySelector('.wrapper')
-      wrapper.style.animationPlayState = 'paused'
-
+    handleDrag({ target, transform, left, top }) {
       target.style.transform = transform;
+      target.style.left = `${left}px`;
+      target.style.top = `${top}px`;
     },
 
     handleResize({ target, width, height, delta }) {
@@ -151,8 +168,8 @@ export default {
       delta[1] && (target.style.height = `${height}px`);
     },
 
-    handleScale({ target, transform, scale }) {
-      console.log('onScale scale', scale);
+    handleScale({ target, transform}) {
+      console.log('onScale scale', `${transform}!important`);
       target.style.transform = transform;
     },
 
@@ -202,11 +219,13 @@ export default {
   }
 
   .wrapper {
+    position: relative;
     width: 160px;
+    height: 160px;
   }
 
   .block {
-    display: inline-block;
+    position: absolute;
     border-radius: 50%;
     width: 75px;
     height: 75px;
@@ -214,20 +233,21 @@ export default {
 
   .st {
     background: rgb(219, 135, 252);
-    margin: 0 10px 10px 0;
   }
 
   .nd {
     background: rgb(243, 134, 134);
-    margin: 0 0 10px 0;
+    right: 0;
   }
 
   .rd {
     background: rgb(140, 238, 140);
-    margin: 0 10px 0 0;
+    bottom: 0;
   }
 
   .th {
     background: rgb(146, 148, 253);
+    bottom: 0;
+    right: 0;
   }
 </style>
