@@ -1,6 +1,8 @@
-<template>
+  <template>
   <div class="bg">
-    <div class="wrapper">
+    <div
+      class="wrapper"
+      ref="wrapper">
       <div
         v-for="element of elements"
         :key="element"
@@ -35,7 +37,9 @@ export default {
   },
 
   data: () => ({
+    animationRunning: true,
     animationState: 'Pause',
+    animationInstance: null,
 
     elements: ['st', 'nd', 'rd', 'th'],
 
@@ -59,17 +63,13 @@ export default {
    methods: {
     toggleAnimationState() {
       this.resetMoveableTarget()
-
-      const wrapper = document.querySelector('.wrapper')
-      const playState = window.getComputedStyle(wrapper).animationPlayState
-      const isRunning = /running/.test(playState)
-
-      wrapper.style.animationPlayState = isRunning ? 'paused' : 'running'      
-      this.animationState = isRunning ? 'Run' : 'Pause'
+      this.animationInstance[this.animationRunning ? 'pause' : 'play']()
+      this.animationState = !this.animationRunning ? 'Pause' : 'Play'
+      this.animationRunning = !this.animationRunning
     },
 
     elementClicked ({ target }) {
-      if (/run/i.test(this.animationState)) {
+      if (!this.animationRunning) {
         this.resetMoveableTarget()
         this.moveable.target = target
         this.showMoveableGuides = true
@@ -111,7 +111,32 @@ export default {
 
     handlePinch({ target }) {
       console.log('onPinch', target);
-    },
+    }
+  },
+
+  mounted () {
+    /*
+      @keyframes sillyAnimation {
+        0% { transform: rotateZ(0deg) scale(1); }
+        100% { transform: rotateZ(360deg) scale(.5); }
+      }
+
+      animation: sillyAnimation 1s ease-in-out 0s infinite alternate-reverse;
+    */
+
+    const keyframes = [
+      { transform: 'rotateZ(0deg) scale(1)' },
+      { transform: 'rotateZ(360deg) scale(.5)' },
+    ]
+
+    const options = {
+      duration: 1000,
+      iterations: 'Infinity',
+      direction: 'alternate-reverse',
+      easing: 'ease-in-out'
+    }
+
+    this.animationInstance = this.$refs.wrapper.animate(keyframes, options)
   }
 }
 </script>
@@ -142,7 +167,6 @@ export default {
 
   .wrapper {
     width: 160px;
-    animation: sillyAnimation 1s ease-in-out 0s infinite alternate-reverse;
   }
 
   .block {
@@ -169,11 +193,5 @@ export default {
 
   .th {
     background: rgb(146, 148, 253);
-  }
-
-  @keyframes sillyAnimation {
-    0% { transform: rotateZ(0deg) scale(1); }
-
-    100% { transform: rotateZ(360deg) scale(.5); }
   }
 </style>
