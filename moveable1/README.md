@@ -1,24 +1,5 @@
-# moveable1
+Procura por solução para os conflitos envolvendo a animação via JS e o Moveable
 
-## Project setup
-```
-yarn install
-```
-
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- Wrapper no elemento?
+- Remoção e adição da animação toda hora?
+- Recriação de funcionalidade?

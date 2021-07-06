@@ -1,10 +1,12 @@
-<template>
+  <template>
   <div class="bg">
     <div class="wrapper">
       <div
-        v-for="element of elements"
+        v-for="(element, index) of elements"
+        :data-index="index"
         :key="element"
         :class="element"
+        ref="block"
         class="block"
         @click="elementClicked"/>
     </div>
@@ -35,7 +37,9 @@ export default {
   },
 
   data: () => ({
+    animationRunning: true,
     animationState: 'Pause',
+    animationInstances: [],
 
     elements: ['st', 'nd', 'rd', 'th'],
 
@@ -60,16 +64,32 @@ export default {
     toggleAnimationState() {
       this.resetMoveableTarget()
 
-      const wrapper = document.querySelector('.wrapper')
-      const playState = window.getComputedStyle(wrapper).animationPlayState
-      const isRunning = /running/.test(playState)
+      const animations = [ ...this.animationInstances ] 
 
-      wrapper.style.animationPlayState = isRunning ? 'paused' : 'running'      
-      this.animationState = isRunning ? 'Run' : 'Pause'
+      for (let i = 0; i < animations.length; i++) {
+        this.resetAnimation()
+
+        if (this.animationRunning) {
+          this.animationState = 'Play'
+        } else {
+          this.animationInstances = []
+          this.createAnimation()
+          this.animationState = 'Pause'
+        }
+      }
+
+      this.animationRunning = !this.animationRunning
+    },
+
+    resetAnimation () {
+      const animations = this.animationInstances
+      for (let i = 0; i < animations.length; i++) {
+        animations[i].pause()
+      }
     },
 
     elementClicked ({ target }) {
-      if (/run/i.test(this.animationState)) {
+      if (!this.animationRunning) {
         this.resetMoveableTarget()
         this.moveable.target = target
         this.showMoveableGuides = true
@@ -81,11 +101,65 @@ export default {
       this.moveable.target = null
     },
 
-    handleDrag({ target, transform }) {
-      const wrapper = document.querySelector('.wrapper')
-      wrapper.style.animationPlayState = 'paused'
+    createAnimation () {
+      /* Animation contains "transform", so every "transform" that Moveable tries to apply will fail */
+      // const keyframes = [
+      //   [
+      //     { transform: 'scale(1)' },
+      //     { transform: 'scale(.3)' },
+      //   ], [
+      //     { transform: 'translateY(0) translateX(0)' },
+      //     { transform: 'translateY(-100px) translateX(0)' },
+      //     { transform: 'translateY(-100px) translateX(100px)' },
+      //     { transform: 'translateY(0) translateX(100px)' },
+      //     { transform: 'translateY(0) translateX(0)' },
+      //   ], [
+      //     { transform: 'translateY(0) translateX(0)' },
+      //     { transform: 'translateY(100px) translateX(-100px)' },
+      //     { transform: 'translateY(100px) translateX(0)' },
+      //     { transform: 'translateY(0) translateX(0)' }
+      //   ], [
+      //     { transform: 'rotateY(0)' },
+      //     { transform: 'rotateY(360deg)' }
+      //   ]
+      // ]
 
+      /* Animation contains "top, right, left, bottom", so every "top, right,
+      left, bottom" that Moveable tries to apply will fail */
+      const keyframes = [
+        [
+          { top: '-100px' },
+          { top: '0px' },
+        ], [
+          { right: '-100px' },
+          { right: '0px' }
+        ], [
+          { left: '-100px' },
+          { left: '0px' },
+        ], [
+          { bottom: '-100px' },
+          { bottom: '0px' }
+        ]
+      ]
+
+      const options = {
+        duration: 1000,
+        iterations: 'Infinity',
+        direction: 'alternate',
+        easing: 'ease-in-out'
+      }
+
+      const blocks = this.$refs.block
+      for (let i = 0; i < blocks.length; i++) {
+        const animation = blocks[i].animate(keyframes[i], options)
+        this.animationInstances.push(animation)
+      }
+    },
+
+    handleDrag({ target, transform, left, top }) {
       target.style.transform = transform;
+      target.style.left = `${left}px`;
+      target.style.top = `${top}px`;
     },
 
     handleResize({ target, width, height, delta }) {
@@ -94,8 +168,8 @@ export default {
       delta[1] && (target.style.height = `${height}px`);
     },
 
-    handleScale({ target, transform, scale }) {
-      console.log('onScale scale', scale);
+    handleScale({ target, transform}) {
+      console.log('onScale scale', `${transform}!important`);
       target.style.transform = transform;
     },
 
@@ -111,7 +185,11 @@ export default {
 
     handlePinch({ target }) {
       console.log('onPinch', target);
-    },
+    }
+  },
+
+  mounted () {
+    this.createAnimation()
   }
 }
 </script>
@@ -141,12 +219,13 @@ export default {
   }
 
   .wrapper {
+    position: relative;
     width: 160px;
-    animation: sillyAnimation 1s ease-in-out 0s infinite alternate-reverse;
+    height: 160px;
   }
 
   .block {
-    display: inline-block;
+    position: absolute;
     border-radius: 50%;
     width: 75px;
     height: 75px;
@@ -154,26 +233,21 @@ export default {
 
   .st {
     background: rgb(219, 135, 252);
-    margin: 0 10px 10px 0;
   }
 
   .nd {
     background: rgb(243, 134, 134);
-    margin: 0 0 10px 0;
+    right: 0;
   }
 
   .rd {
     background: rgb(140, 238, 140);
-    margin: 0 10px 0 0;
+    bottom: 0;
   }
 
   .th {
     background: rgb(146, 148, 253);
-  }
-
-  @keyframes sillyAnimation {
-    0% { transform: rotateZ(0deg) scale(1); }
-
-    100% { transform: rotateZ(360deg) scale(.5); }
+    bottom: 0;
+    right: 0;
   }
 </style>
