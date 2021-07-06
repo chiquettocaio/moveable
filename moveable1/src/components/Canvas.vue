@@ -64,28 +64,13 @@ export default {
     toggleAnimationState() {
       this.resetMoveableTarget()
 
-      const animations = [ ...this.animationInstances ] 
+      this.animationState = this.animationRunning ? 'Play' : 'Pause'
 
-      for (let i = 0; i < animations.length; i++) {
-        this.resetAnimation()
-
-        if (this.animationRunning) {
-          this.animationState = 'Play'
-        } else {
-          this.animationInstances = []
-          this.createAnimation()
-          this.animationState = 'Pause'
-        }
+      for (const anim of this.animationInstances) {
+        anim[this.animationRunning ? 'pause' : 'play']()
       }
 
       this.animationRunning = !this.animationRunning
-    },
-
-    resetAnimation () {
-      const animations = this.animationInstances
-      for (let i = 0; i < animations.length; i++) {
-        animations[i].pause()
-      }
     },
 
     elementClicked ({ target }) {
@@ -156,10 +141,8 @@ export default {
       }
     },
 
-    handleDrag({ target, transform, left, top }) {
+    handleDrag({ target, transform }) {
       target.style.transform = transform;
-      target.style.left = `${left}px`;
-      target.style.top = `${top}px`;
     },
 
     handleResize({ target, width, height, delta }) {
