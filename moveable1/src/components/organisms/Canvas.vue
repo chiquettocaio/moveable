@@ -2,13 +2,10 @@
   <div class="bg">
     <div class="wrapper">
       <div
-        v-for="(element, index) of elements"
-        :data-index="index"
-        :key="element"
-        :class="element"
         ref="block"
-        class="block"
-        @click="elementClicked"/>
+        class="block st"
+        @click="elementClicked"
+      />
     </div>
 
     <Moveable
@@ -23,17 +20,24 @@
       @warp="handleWarp" />
 
     <button @click="toggleAnimationState()"> {{ animationState }} </button>
+
+    <KeyframesBar
+      v-if="!animationRunning"
+      :keyframes="this.elementKfs"
+      :animationTime="animationTime"
+      :animationInstance="elementAnimation"
+    />
   </div>
 </template>
 
 <script>
-import Moveable from 'vue-moveable';
+import Moveable from 'vue-moveable'
 
 export default {
   name: 'Canvas',
 
   components: {
-    Moveable,
+    Moveable
   },
 
   data: () => ({
@@ -41,7 +45,15 @@ export default {
     animationState: 'Pause',
     animationInstances: [],
 
-    elements: ['st', 'nd', 'rd', 'th'],
+    elementAnimation: null,
+    animationTime: 4000,
+    elementKfs: [
+      { left: '0px', top: '0px', background: 'red', offset: 0 },
+      { left: '425px', top: '0px', background: 'blue', offset: 0.25 },
+      { left: '425px', top: '200px', background: 'pink', offset: 0.5 },
+      { left: '0px', top: '200px', background: 'tomato', offset: 0.75 },
+      { left: '0px', top: '0px', background: 'white', offset: 1 },
+    ],
 
     showMoveableGuides: false,
 
@@ -63,13 +75,8 @@ export default {
    methods: {
     toggleAnimationState() {
       this.resetMoveableTarget()
-
       this.animationState = this.animationRunning ? 'Play' : 'Pause'
-
-      for (const anim of this.animationInstances) {
-        anim[this.animationRunning ? 'pause' : 'play']()
-      }
-
+      this.elementAnimation[this.animationRunning ? 'pause' : 'play']()
       this.animationRunning = !this.animationRunning
     },
 
@@ -87,58 +94,16 @@ export default {
     },
 
     createAnimation () {
-      /* Animation contains "transform", so every "transform" that Moveable tries to apply will fail */
-      // const keyframes = [
-      //   [
-      //     { transform: 'scale(1)' },
-      //     { transform: 'scale(.3)' },
-      //   ], [
-      //     { transform: 'translateY(0) translateX(0)' },
-      //     { transform: 'translateY(-100px) translateX(0)' },
-      //     { transform: 'translateY(-100px) translateX(100px)' },
-      //     { transform: 'translateY(0) translateX(100px)' },
-      //     { transform: 'translateY(0) translateX(0)' },
-      //   ], [
-      //     { transform: 'translateY(0) translateX(0)' },
-      //     { transform: 'translateY(100px) translateX(-100px)' },
-      //     { transform: 'translateY(100px) translateX(0)' },
-      //     { transform: 'translateY(0) translateX(0)' }
-      //   ], [
-      //     { transform: 'rotateY(0)' },
-      //     { transform: 'rotateY(360deg)' }
-      //   ]
-      // ]
-
-      /* Animation contains "top, right, left, bottom", so every "top, right,
-      left, bottom" that Moveable tries to apply will fail */
-      const keyframes = [
-        [
-          { top: '-100px' },
-          { top: '0px' },
-        ], [
-          { right: '-100px' },
-          { right: '0px' }
-        ], [
-          { left: '-100px' },
-          { left: '0px' },
-        ], [
-          { bottom: '-100px' },
-          { bottom: '0px' }
-        ]
-      ]
-
       const options = {
-        duration: 1000,
-        iterations: 'Infinity',
-        direction: 'alternate',
-        easing: 'ease-in-out'
+        duration: this.animationTime,
+        // iterations: 'Infinity',
+        easing: 'linear'
       }
 
-      const blocks = this.$refs.block
-      for (let i = 0; i < blocks.length; i++) {
-        const animation = blocks[i].animate(keyframes[i], options)
-        this.animationInstances.push(animation)
-      }
+      const animatedElement = this.$refs.block
+      const animation = animatedElement.animate(this.elementKfs, options)
+      this.elementAnimation = animation
+      console.log(animation)
     },
 
     handleDrag({ target, transform }) {
@@ -203,7 +168,7 @@ export default {
 
   .wrapper {
     position: relative;
-    width: 160px;
+    width: 500px;
     height: 160px;
   }
 
@@ -216,21 +181,5 @@ export default {
 
   .st {
     background: rgb(219, 135, 252);
-  }
-
-  .nd {
-    background: rgb(243, 134, 134);
-    right: 0;
-  }
-
-  .rd {
-    background: rgb(140, 238, 140);
-    bottom: 0;
-  }
-
-  .th {
-    background: rgb(146, 148, 253);
-    bottom: 0;
-    right: 0;
   }
 </style>

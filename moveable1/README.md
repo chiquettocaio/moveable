@@ -1,5 +1,1 @@
-Procura por solução para os conflitos envolvendo a animação via JS e o Moveable
-
-- Wrapper no elemento?
-- Remoção e adição da animação toda hora?
-- Recriação de funcionalidade?
+O Suite utiliza keyframes sempre se eu não estiver enganado, desde o primeiro de animação. Aqui a tentativa será de fazer objetos animados pensando a partir dessa ótica: não adicionaremos as transformações do Moveable direto no elemento, e sim direto em seu keyframe.

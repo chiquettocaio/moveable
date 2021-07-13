@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Canvas from './components/Canvas.vue'
+import Canvas from './components/organisms/Canvas.vue'
 
 export default {
   name: 'App',
