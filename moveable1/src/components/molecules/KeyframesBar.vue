@@ -26,6 +26,12 @@ export default {
     animationInstance: {
       type: [Object, Animation],
       required: true
+    },
+
+    activeKeyframe: {
+      type: Number,
+      required: false,
+      default: 0
     }
   },
 
@@ -36,10 +42,14 @@ export default {
   methods: {
     keyframeClicked (kf, index) {
       this.activeKfIndex = index
-      console.log(this.animationTime * kf.offset)
       const kfAnimationTime = this.animationTime * kf.offset
       this.animationInstance.currentTime = kfAnimationTime
+      this.$emit('keyframeClicked', index)
     }
+  },
+
+  mounted () {
+    this.activeKfIndex = this.activeKeyframe
   }
 }
 </script>
@@ -53,7 +63,7 @@ export default {
     bottom: 50px;
     width: 500px;
     height: 50px;
-    background: rgb(54, 46, 122);
+    background: #5847b9;
     border-radius: 4px;
   }
 

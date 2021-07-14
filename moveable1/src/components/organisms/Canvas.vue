@@ -19,19 +19,27 @@
       @rotate="handleRotate"
       @warp="handleWarp" />
 
-    <button @click="toggleAnimationState()"> {{ animationState }} </button>
+    <button @click="toggleAnimationState()"> 
+      <img
+        :src="imageData.src"
+        :alt="imageData.alt" />
+    </button>
 
     <KeyframesBar
       v-if="!animationRunning"
       :keyframes="this.elementKfs"
       :animationTime="animationTime"
       :animationInstance="elementAnimation"
+      :activeKeyframe="this.currentKfIndex"
+      @keyframeClicked="updateCurrentKeyframe"
     />
   </div>
 </template>
 
 <script>
 import Moveable from 'vue-moveable'
+import PlayImage from '../../assets/play.png'
+import PauseImage from '../../assets/pause.png'
 
 export default {
   name: 'Canvas',
@@ -47,12 +55,13 @@ export default {
 
     elementAnimation: null,
     animationTime: 4000,
+    currentKfIndex: null,
     elementKfs: [
-      { left: '0px', top: '0px', background: 'red', offset: 0 },
-      { left: '425px', top: '0px', background: 'blue', offset: 0.25 },
-      { left: '425px', top: '200px', background: 'pink', offset: 0.5 },
-      { left: '0px', top: '200px', background: 'tomato', offset: 0.75 },
-      { left: '0px', top: '0px', background: 'white', offset: 1 },
+      { left: '0px', top: '0px', offset: 0 },
+      { left: '425px', top: '0px', offset: 0.25 },
+      { left: '425px', top: '425px', offset: 0.5 },
+      { left: '0px', top: '425px', offset: 0.75 },
+      { left: '0px', top: '0px', offset: 0.999 },
     ],
 
     showMoveableGuides: false,
@@ -72,10 +81,19 @@ export default {
     },
   }),
 
+  computed: {
+    imageData () {
+      return {
+        src: this.animationRunning ? PauseImage : PlayImage,
+        alt: this.animationRunning ? 'Pause' : 'Play',
+      }
+    }
+  },
+
    methods: {
     toggleAnimationState() {
       this.resetMoveableTarget()
-      this.animationState = this.animationRunning ? 'Play' : 'Pause'
+      this.animationState = +this.animationRunning
       this.elementAnimation[this.animationRunning ? 'pause' : 'play']()
       this.animationRunning = !this.animationRunning
     },
@@ -93,21 +111,29 @@ export default {
       this.moveable.target = null
     },
 
+    updateCurrentKeyframe (index) {
+      this.currentKfIndex = index
+    },
+
     createAnimation () {
       const options = {
         duration: this.animationTime,
-        // iterations: 'Infinity',
+        iterations: 'Infinity',
         easing: 'linear'
       }
 
       const animatedElement = this.$refs.block
       const animation = animatedElement.animate(this.elementKfs, options)
       this.elementAnimation = animation
-      console.log(animation)
     },
 
-    handleDrag({ target, transform }) {
-      target.style.transform = transform;
+    handleDrag({ left, top }) {
+      if (+this.currentKfIndex >= 0) {
+        const animationKfs = this.elementAnimation.effect.getKeyframes()
+        animationKfs[this.currentKfIndex].top = `${top}px`
+        animationKfs[this.currentKfIndex].left = `${left}px`
+        this.elementAnimation.effect.setKeyframes(animationKfs)
+      }
     },
 
     handleResize({ target, width, height, delta }) {
@@ -157,8 +183,9 @@ export default {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 100px;
-    height: 50px;
+    width: 90px;
+    height: 90px;
+    padding-top: 8px;
     background: #CECECE;
     border: none;
     border-radius: 4px;
@@ -169,7 +196,10 @@ export default {
   .wrapper {
     position: relative;
     width: 500px;
-    height: 160px;
+    height: 500px;
+    background: #5847b9;
+    border-radius: 4px;
+    overflow: hidden;
   }
 
   .block {
