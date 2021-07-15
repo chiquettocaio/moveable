@@ -136,20 +136,22 @@ export default {
       }
     },
 
+    handleScale({ transform }) {
+      const animationKfs = this.elementAnimation.effect.getKeyframes()
+      animationKfs[this.currentKfIndex].transform = transform
+      this.elementAnimation.effect.setKeyframes(animationKfs)
+    },
+
+    handleRotate({ transform }) {
+      const animationKfs = this.elementAnimation.effect.getKeyframes()
+      animationKfs[this.currentKfIndex].transform = transform
+      this.elementAnimation.effect.setKeyframes(animationKfs)
+    },
+
     handleResize({ target, width, height, delta }) {
       console.log('onResize', width, height);
       delta[0] && (target.style.width = `${width}px`);
       delta[1] && (target.style.height = `${height}px`);
-    },
-
-    handleScale({ target, transform}) {
-      console.log('onScale scale', `${transform}!important`);
-      target.style.transform = transform;
-    },
-
-    handleRotate({ target, dist, transform }) {
-      console.log('onRotate', dist);
-      target.style.transform = transform;
     },
 
     handleWarp({ target, transform }) {
